@@ -79,7 +79,7 @@ pub fn worlds(
     }
     // Exact Python reference's committed first-witness ordering.
     result.sort_by(|a, b| {
-        let k = |w: &World| {
+        fn k(w: &World) -> (u64, u64, u32, &Vec<u32>, &Vec<u8>) {
             (
                 w.demand()
                     + u64::from(w.stock)
