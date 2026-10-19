@@ -5,8 +5,8 @@ Open an issue describing the formal model, expected semantic property, counterex
 Before opening a PR:
 ```bash
 cargo fmt --all -- --check
-cargo clippy --workspace --all-targets -- -D warnings
-cargo test --workspace --all-targets
+cargo clippy --workspace --all-targets --locked -- -D warnings
+cargo test --workspace --all-targets --locked
 python3 -m pytest -q reference/test_nomosforge_reference.py
 bash scripts/reproduce.sh
 ```

@@ -10,18 +10,18 @@ Requires Rust and Cargo (edition 2021; declared MSRV 1.82) and Python 3.12+ for 
 
 ```bash
 # 1. Produce and check a policy against the 1,296-state reference domain.
-cargo run --quiet -p nomos-cli -- validate examples/water-allocation/world.nomos.yaml
-cargo run --quiet -p nomos-cli -- synth examples/water-allocation/world.nomos.yaml --engine enumerate --json /tmp/nomos-policy.json
-cargo run --quiet -p nomos-cli -- verify /tmp/nomos-policy.json --full-domain
+cargo run --locked --quiet -p nomos-cli -- validate examples/water-allocation/world.nomos.yaml
+cargo run --locked --quiet -p nomos-cli -- synth examples/water-allocation/world.nomos.yaml --engine enumerate --json /tmp/nomos-policy.json
+cargo run --locked --quiet -p nomos-cli -- verify /tmp/nomos-policy.json --full-domain
 
 # 2. Produce a scoped two-agent impossibility certificate and check it.
 # Conflict and explanation exit with code 3 (verified model-level infeasibility).
-cargo run --quiet -p nomos-cli -- conflict > /tmp/nomos-conflict.json || test "$?" -eq 3
-cargo run --quiet -p nomos-cli -- explain /tmp/nomos-conflict.json || test "$?" -eq 3
+cargo run --locked --quiet -p nomos-cli -- conflict > /tmp/nomos-conflict.json || test "$?" -eq 3
+cargo run --locked --quiet -p nomos-cli -- explain /tmp/nomos-conflict.json || test "$?" -eq 3
 
 # 3. Explore model changes and bounded feasible policies.
-cargo run --quiet -p nomos-cli -- relax examples/symmetric-single-token/world.nomos.yaml --show-all-minimal
-cargo run --quiet -p nomos-cli -- frontier examples/water-allocation/world.nomos.yaml
+cargo run --locked --quiet -p nomos-cli -- relax examples/symmetric-single-token/world.nomos.yaml --show-all-minimal
+cargo run --locked --quiet -p nomos-cli -- frontier examples/water-allocation/world.nomos.yaml
 ```
 
 **Expected scope:** 3 agents, stock 0–5, needs 0–2, critical flags 0/1 = 1,296 worlds. The 16-program grammar has a feasible `critical_equal` / reserve-0 allocation policy. Its CEGIS trace rejects two earlier candidate policies. A symmetric two-agent, one-indivisible-token world has no integer allocation satisfying *both* full utilization and strict deterministic anonymity. Permitting a lottery, equal halves, or unused stock changes the assumptions.
@@ -32,7 +32,7 @@ cargo run --quiet -p nomos-cli -- frontier examples/water-allocation/world.nomos
 bash scripts/reproduce.sh
 ```
 
-This script builds the CLI, tests the Rust workspace, runs two showcases and the independent 20,736-case Python/Rust oracle comparison. See [reproducibility matrix](docs/reproducibility.md) for evidence and limitations. The optional fuzzing and benchmark tools are not assertions of results. CI runs the release smoke script on each PR.
+This script builds the CLI, tests the Rust workspace, runs two showcases and the independent 20,736-case Python/Rust oracle comparison. Cargo uses the committed `Cargo.lock` with `--locked` so dependency resolution cannot silently change. See [reproducibility matrix](docs/reproducibility.md) for evidence and limitations. The optional fuzzing and benchmark tools are not assertions of results. CI runs the release smoke script on each PR.
 
 ## Architecture
 
