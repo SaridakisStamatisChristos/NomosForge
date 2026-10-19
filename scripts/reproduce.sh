@@ -40,4 +40,22 @@ if cargo run --locked --quiet -p nomos-cli -- verify "$temp/forgery.json" --full
     echo "ERROR: forged policy evidence was accepted" >&2
     exit 1
 fi
-echo "REPRODUCED: 1,296-state policy, 20,736 differential cases, scoped impossibility and relaxations; no social validity claim."
+# Changing only the model identity must invalidate provenance even if all world states match.
+sed 's/id: water-rationing/id: altered-rationing/' examples/water-allocation/world.nomos.yaml > "$temp/altered-model.yaml"
+if cargo run --locked --quiet -p nomos-cli -- verify "$temp/policy.json" --full-domain --model "$temp/altered-model.yaml" > /dev/null 2>&1; then
+    echo "ERROR: a report was replayed against a different declared model" >&2
+    exit 1
+fi
+# A changed grammar order cannot silently reuse an old synthesis certificate.
+sed 's/priority: \[index, equal,/priority: [equal, index,/' examples/water-allocation/world.nomos.yaml > "$temp/altered-grammar.yaml"
+if cargo run --locked --quiet -p nomos-cli -- verify "$temp/policy.json" --full-domain --model "$temp/altered-grammar.yaml" > /dev/null 2>&1; then
+    echo "ERROR: a report was replayed against a reordered grammar" >&2
+    exit 1
+fi
+# Altering an evidence hash is rejected.
+python3 -c 'import json,sys; j=json.load(open(sys.argv[1]));j["evidence"]["model_sha256"]="0"*64;open(sys.argv[2],"w").write(json.dumps(j))' "$temp/policy.json" "$temp/forged-hash.json"
+if cargo run --locked --quiet -p nomos-cli -- verify "$temp/forged-hash.json" --full-domain > /dev/null 2>&1; then
+    echo "ERROR: a forged evidence hash was accepted" >&2
+    exit 1
+fi
+echo "REPRODUCED: 1,296-state policy, 20,736 differential cases, scoped impossibility, and provenance tampering rejection; no social validity claim."

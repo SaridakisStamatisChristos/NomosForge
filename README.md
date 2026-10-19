@@ -54,4 +54,6 @@ This script builds the CLI, tests the Rust workspace, runs two showcases and the
 
 `BOUNDED_VERIFIED_IN_FINITE_GRAMMAR` = passes **all** enumerated worlds, not outside the domain. `UNREALIZABLE_IN_FINITE_GRAMMAR` = no program in the specified grammar works; not model-level impossibility. `MODEL_INFEASIBLE` = no admissible allocation works in **a specific** declared symmetric two-person state. `UNKNOWN` = computation budget exceeded or incompleteness. `CERTIFICATE_CHECKED` is emitted only when the checker re-evaluates the evidence.
 
+Synthesis reports include a versioned SHA-256 provenance binding for the parsed model, ordered grammar, enumerated worlds, and full synthesis transcript. `verify --full-domain` recomputes each binding **and** replays synthesis; the hash is not a signature or a proof of social validity. Use `--model` with any non-reference input (see [reproducibility notes](docs/reproducibility.md)).
+
 The initial implementation milestones are merged into `main`; their reviews remain in the [pull request history](https://github.com/SaridakisStamatisChristos/NomosForge/pulls?q=is%3Apr+is%3Amerged). Contributions welcome under [Apache-2.0](LICENSE).
