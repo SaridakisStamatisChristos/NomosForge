@@ -6,7 +6,7 @@
 
 ## Two executable demonstrations
 
-Requires Rust and Cargo (edition 2021; declared MSRV 1.82) and Python 3.12+ for the independent reference and CI tools. CI tests current stable Rust; the declared MSRV is not separately exercised. No service, account, database, API key, or GPU.
+Requires Rust and Cargo (edition 2021; declared MSRV 1.82) and Python 3.12+ for the independent reference and CI tools. CI tests current stable Rust and independently tests the declared Rust 1.82 minimum supported version. No service, account, database, API key, or GPU.
 
 ```bash
 # 1. Produce and check a policy against the 1,296-state reference domain.

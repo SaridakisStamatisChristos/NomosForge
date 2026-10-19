@@ -164,6 +164,7 @@ dependencies = [
 name = "nomos-parse"
 version = "0.1.0"
 dependencies = [
+ "nomos-grammar",
  "nomos-types",
  "serde",
  "serde_json",

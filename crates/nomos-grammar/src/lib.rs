@@ -1,8 +1,19 @@
 //! Finite grammar and deterministic bounded world enumeration.
 use nomos_types::{Policy, Priority, World};
 pub fn grammar(priorities: &[Priority], reserves: &[u32]) -> Result<Vec<Policy>, String> {
-    if priorities.is_empty() || reserves.is_empty() || priorities.len() * reserves.len() > 512 {
+    if priorities.is_empty()
+        || reserves.is_empty()
+        || priorities.len().checked_mul(reserves.len()).is_none_or(|n| n > 512)
+    {
         return Err("grammar must be nonempty and contain at most 512 programs".into());
+    }
+    if priorities.iter().enumerate().any(|(i, p)| priorities[..i].contains(p))
+        || reserves.iter().enumerate().any(|(i, r)| reserves[..i].contains(r))
+    {
+        return Err("duplicate priority or reserve in candidate grammar".into());
+    }
+    if reserves.iter().any(|&r| r > 10_000) {
+        return Err("reserve outside declared policy bounds".into());
     }
     Ok(reserves
         .iter()
@@ -32,14 +43,15 @@ fn vectors<T: Clone>(choices: &[T], n: usize) -> Vec<Vec<T>> {
     }
     accum
 }
-pub fn worlds(
+/// Validate cardinality before allocating or claiming a finite proof domain.
+pub fn domain_size(
     agents: usize,
     stock_min: u32,
     stock_max: u32,
     need_min: u32,
     need_max: u32,
     flags: &[u8],
-) -> Result<Vec<World>, String> {
+) -> Result<usize, String> {
     if agents == 0
         || agents > 6
         || stock_max > 128
@@ -51,21 +63,39 @@ pub fn worlds(
     {
         return Err("invalid finite domain".into());
     }
+    if flags.iter().enumerate().any(|(i, f)| flags[..i].contains(f)) {
+        return Err("duplicate critical flag would count identical worlds repeatedly".into());
+    }
     let stocks = u64::from(stock_max - stock_min + 1);
-    let needs = u64::from(need_max - need_min + 1).pow(agents as u32);
-    let crits = (flags.len() as u64).pow(agents as u32);
-    if stocks
+    let needs = u64::from(need_max - need_min + 1)
+        .checked_pow(agents as u32)
+        .ok_or("finite domain cardinality overflow")?;
+    let crits = (flags.len() as u64)
+        .checked_pow(agents as u32)
+        .ok_or("finite domain cardinality overflow")?;
+    let count = stocks
         .checked_mul(needs)
         .and_then(|n| n.checked_mul(crits))
-        .unwrap_or(u64::MAX)
-        > 200_000
-    {
+        .ok_or("finite domain cardinality overflow")?;
+    if count > 200_000 {
         return Err("domain exceeds 200000 worlds".into());
     }
+    Ok(count as usize)
+}
+
+pub fn worlds(
+    agents: usize,
+    stock_min: u32,
+    stock_max: u32,
+    need_min: u32,
+    need_max: u32,
+    flags: &[u8],
+) -> Result<Vec<World>, String> {
+    let capacity = domain_size(agents, stock_min, stock_max, need_min, need_max, flags)?;
     let need_choices: Vec<u32> = (need_min..=need_max).collect();
     let nv = vectors(&need_choices, agents);
     let cv = vectors(flags, agents);
-    let mut result = Vec::with_capacity((stocks * needs * crits) as usize);
+    let mut result = Vec::with_capacity(capacity);
     for stock in stock_min..=stock_max {
         for need in &nv {
             for critical in &cv {
@@ -110,5 +140,15 @@ mod tests {
     fn bounds_enforced() {
         assert!(worlds(6, 0, 128, 0, 32, &[0, 1]).is_err());
         assert!(worlds(0, 0, 1, 0, 1, &[0, 1]).is_err());
+    }
+
+    #[test]
+    fn unique_worlds_and_programs_are_required() {
+        assert!(worlds(3, 0, 5, 0, 2, &[1, 1]).is_err());
+        assert!(worlds(3, 0, 5, 0, 2, &[0, 1, 0]).is_err());
+        assert!(grammar(&[Priority::Index, Priority::Index], &[0]).is_err());
+        assert!(grammar(&[Priority::Index], &[0, 0]).is_err());
+        assert!(grammar(&[Priority::Index], &[10_001]).is_err());
+        assert_eq!(domain_size(3, 0, 5, 0, 2, &[0, 1]), Ok(1_296));
     }
 }
