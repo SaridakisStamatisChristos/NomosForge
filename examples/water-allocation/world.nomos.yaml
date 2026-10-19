@@ -1,0 +1,25 @@
+schema: nomos/v0.1
+model:
+  id: water-rationing
+  people:
+    count: 3
+    attributes: ["need:int", "critical:bool"]
+  resources:
+    - name: water
+      unit: token
+      divisible: false
+      max_stock: 5
+  horizon: 1
+verification:
+  engine: exhaustive
+  stock: {min: 0, max: 5}
+  need: {min: 0, max: 2}
+  critical: [false, true]
+policies:
+  grammar:
+    priority: [index, equal, needs_desc, needs_asc, critical_index, critical_equal, critical_needs_desc, critical_needs_asc]
+    reserve: [0, 1]
+axioms:
+  hard: [nonnegative_allocation, need_cap, conservation, nonwaste, critical_first, bounded_peer_disparity]
+objectives:
+  report: [total_allocated, maximum_shortfall, maximum_peer_disparity]
