@@ -5,11 +5,52 @@ use nomos_grammar::worlds;
 use nomos_parse::parse;
 use nomos_synth::synthesize;
 use std::{env, fs, process};
+
+const HELP: &str = "NomosForge — finite institutional rule synthesis (research software)
+
+Usage: nomos <command> [arguments]
+
+Commands:
+  validate MODEL.yaml                      Validate a finite v0.1 model
+  synth MODEL.yaml [--engine enumerate] [--json FILE]
+                                           Synthesize a bounded policy
+  verify REPORT.json --full-domain [--model MODEL.yaml]
+                                           Recompute and check the evidence
+  frontier MODEL.yaml                      Analyze bounded feasible policies
+  conflict                                 Emit scoped impossibility evidence
+  explain CERTIFICATE.json                 Recheck a conflict certificate
+  relax MODEL.yaml [--show-all-minimal]    Show explicit model relaxations
+  simulate TRACE.json                      Check the supplied finite trace
+  behavior SCENARIO.json                   Enumerate hypothetical responses
+  corpus                                   Emit the reference comparison corpus
+  doctor                                   Show finite-model scope information
+  --help, -h                               Show this usage
+  --version, -V                            Show the CLI version
+
+Verify uses examples/water-allocation/world.nomos.yaml if --model is omitted.
+Exit codes: 0 success; 2 invalid input; 3 verified bounded infeasibility;
+            4 incomplete synthesis; 5 unexpected synthesis status.
+The 3 exit code for conflict/explain is expected, not a tool crash.";
+
 fn run(args: &[String]) -> Result<i32, String> {
     if args.len() < 2 {
         return Err("usage: nomos validate|synth|explain|doctor [file]".into());
     }
     match args[1].as_str() {
+        "--help" | "-h" | "help" => {
+            if args.len() != 2 {
+                return Err("usage: nomos --help".into());
+            }
+            println!("{HELP}");
+            Ok(0)
+        }
+        "--version" | "-V" | "version" => {
+            if args.len() != 2 {
+                return Err("usage: nomos --version".into());
+            }
+            println!("nomos {}", env!("CARGO_PKG_VERSION"));
+            Ok(0)
+        }
         "relax" => {
             if args.len() != 3 && (args.len() != 4 || args[3] != "--show-all-minimal") {
                 return Err("usage: nomos relax conflict-world.yaml [--show-all-minimal]".into());
@@ -278,6 +319,16 @@ mod tests {
 
     fn args(parts: &[&str]) -> Vec<String> {
         parts.iter().map(|s| (*s).to_string()).collect()
+    }
+
+    #[test]
+    fn help_and_version_have_stable_exit_contracts() {
+        for flag in ["--help", "-h", "help", "--version", "-V", "version"] {
+            assert_eq!(run(&args(&["nomos", flag])), Ok(0));
+            assert!(run(&args(&["nomos", flag, "extra"])).is_err());
+        }
+        assert!(HELP.contains("verify REPORT.json --full-domain"));
+        assert!(HELP.contains("Exit codes:"));
     }
 
     #[test]

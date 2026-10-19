@@ -1,6 +1,6 @@
 # ADR 0002 — Replace retired serde_yaml with serde_norway
 
-Status: Accepted for review (October 19, 2026)
+Status: Accepted (merged in [PR #18](https://github.com/SaridakisStamatisChristos/NomosForge/pull/18), October 19, 2026)
 
 ## Context
 

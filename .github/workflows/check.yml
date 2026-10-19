@@ -14,6 +14,8 @@ jobs:
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - run: cargo test --workspace --all-targets --locked
       - run: bash scripts/reproduce.sh
+      # Verify a clean local cargo install and the documented end-user CLI journey.
+      - run: bash scripts/smoke_install.sh
       - run: python3 scripts/manifest.py > /tmp/nomos-manifest.json
       - run: python3 -c "import json; d=json.load(open('/tmp/nomos-manifest.json'));assert d['files'] and len(d['commit'])==40"
       - run: cargo run --locked --quiet -p nomos-cli -- corpus > /tmp/nomos-corpus.jsonl
