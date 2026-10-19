@@ -1,0 +1,31 @@
+name: Temporary Cargo.lock bootstrap
+on:
+  push:
+    branches:
+      - chore/cargo-lockfile-20261019
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install declared minimum Rust toolchain
+        run: rustup toolchain install 1.82.0 --profile minimal
+      - name: Resolve and test dependencies with Rust 1.82
+        run: |
+          cargo +1.82.0 generate-lockfile
+          cargo +1.82.0 test --workspace --all-targets --locked
+          cargo +1.82.0 build --workspace --locked
+      - name: Commit verified Cargo.lock to feature branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Cargo.lock
+          git diff --cached --exit-code && { echo "ERROR: missing generated lockfile"; exit 1; } || true
+          git commit -m "build: add validated Rust workspace lockfile"
+          git push origin HEAD:chore/cargo-lockfile-20261019
