@@ -101,11 +101,12 @@ fn failed_axioms(w: &World, a: &[u32]) -> Vec<&'static str> {
     }
     for i in 0..a.len() {
         for j in (i + 1)..a.len() {
-            if w.critical[i] == w.critical[j] && w.needs[i] == w.needs[j] && a[i].abs_diff(a[j]) > 1
+            if w.critical[i] == w.critical[j]
+                && w.needs[i] == w.needs[j]
+                && a[i].abs_diff(a[j]) > 1
+                && !failed.contains(&"bounded_peer_disparity")
             {
-                if !failed.contains(&"bounded_peer_disparity") {
-                    failed.push("bounded_peer_disparity");
-                }
+                failed.push("bounded_peer_disparity");
             }
         }
     }
