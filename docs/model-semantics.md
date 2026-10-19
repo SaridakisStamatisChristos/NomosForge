@@ -1,0 +1,11 @@
+# Model semantics
+
+Version `nomos/v0.1`: three agents, one indivisible integer token resource, horizon 1, exact bounded stock and need ranges, binary critical flag. Policies allocate one token at a time until supply, reported needs or reserve rules terminate. Candidate order is a finite grammar of priority operations and reserves; deterministic ties break by input index, not by a claim of strict anonymity.
+
+A policy is **feasible within the model** if `nomos-execute::violation` returns no violated check for every enumerated state. The hard checks used are `nonnegative_allocation`, `need_cap`, `conservation`, `nonwaste`, `critical_first`, and `bounded_peer_disparity`. The equal-peer test compares only citizens having identical declared critical flags and needs, and permits a one-token difference. This is a bounded fairness rule, not legal equality, group equity, procedural justice or demographic nondiscrimination.
+
+CEGIS picks the first candidate satisfying cached witnesses, globally checks it against every world and records the first counterexample according to a committed complexity sort. Infeasibility for a grammar does not imply infeasibility for all programs.
+
+Conflict certificates of type `nomos/conflict/v0.1` concern two agents with identical need=1, stock=1, indivisible tokens and strict deterministic anonymity. The checker enumerates all four (0/1)^2 outcomes, verifies capacity and utilization, and compares them against the claimed certificate. Relaxation models explicitly distinguish divisible units, probabilistic outcomes and idle stock.
+
+Transition models (`nomos/transition/v0.1`) check only the supplied finite trace (including typed shock/replenishment arrays and optional per-person coupling caps), **not** every possible shock sequence. Behavior models (`nomos/behavior/v0.1`) enumerate user-declared counterfactual reports, **not** empirically validated human behavior.

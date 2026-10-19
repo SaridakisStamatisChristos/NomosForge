@@ -1,0 +1,228 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NomosForge finite model v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "model",
+    "verification",
+    "policies",
+    "axioms",
+    "objectives"
+  ],
+  "properties": {
+    "schema": {
+      "const": "nomos/v0.1"
+    },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "people",
+        "resources",
+        "horizon"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "horizon": {
+          "const": 1
+        },
+        "people": {
+          "type": "object",
+          "required": [
+            "count",
+            "attributes"
+          ],
+          "properties": {
+            "count": {
+              "const": 3
+            },
+            "attributes": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "const": "need:int"
+                },
+                {
+                  "const": "critical:bool"
+                }
+              ],
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          "additionalProperties": false
+        },
+        "resources": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "unit",
+              "divisible",
+              "max_stock"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "unit": {
+                "const": "token"
+              },
+              "divisible": {
+                "const": false
+              },
+              "max_stock": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 128
+              }
+            }
+          }
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "engine",
+        "stock",
+        "need",
+        "critical"
+      ],
+      "properties": {
+        "engine": {
+          "const": "exhaustive"
+        },
+        "stock": {
+          "$ref": "#/$defs/bounds"
+        },
+        "need": {
+          "$ref": "#/$defs/bounds"
+        },
+        "critical": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "boolean"
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "policies": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "grammar"
+      ],
+      "properties": {
+        "grammar": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "priority",
+            "reserve"
+          ],
+          "properties": {
+            "priority": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "enum": [
+                  "index",
+                  "equal",
+                  "needs_desc",
+                  "needs_asc",
+                  "critical_index",
+                  "critical_equal",
+                  "critical_needs_desc",
+                  "critical_needs_asc"
+                ]
+              }
+            },
+            "reserve": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              }
+            }
+          }
+        }
+      }
+    },
+    "axioms": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hard"
+      ],
+      "properties": {
+        "hard": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "nonnegative_allocation",
+              "need_cap",
+              "conservation",
+              "nonwaste",
+              "critical_first",
+              "bounded_peer_disparity"
+            ]
+          }
+        }
+      }
+    },
+    "objectives": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "report"
+      ],
+      "properties": {
+        "report": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "bounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "min",
+        "max"
+      ],
+      "properties": {
+        "min": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}
