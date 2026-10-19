@@ -152,7 +152,7 @@ impl Spec {
     }
 }
 pub fn parse(input: &str) -> Result<Spec, String> {
-    let parsed: Spec = serde_yaml::from_str(input).map_err(|e| e.to_string())?;
+    let parsed: Spec = serde_norway::from_str(input).map_err(|e| e.to_string())?;
     parsed.validate()?;
     Ok(parsed)
 }
@@ -165,6 +165,65 @@ mod tests {
         assert!(parse(s).is_ok());
         assert!(parse(&s.replace("unit: token", "unit: litre")).is_err());
         assert!(parse(&s.replace("divisible: false", "divisible: true")).is_err());
+    }
+
+    /// Protect the typed v0.1 model contract across YAML backend changes.
+    #[test]
+    fn yaml_parser_preserves_reference_model_semantics() {
+        let source = include_str!("../../../examples/water-allocation/world.nomos.yaml");
+        let parsed = parse(source).unwrap();
+        let typed = serde_json::to_value(&parsed).unwrap();
+
+        assert_eq!(typed["schema"], "nomos/v0.1");
+        assert_eq!(typed["model"]["id"], "water-rationing");
+        assert_eq!(typed["model"]["people"]["count"], 3);
+        assert_eq!(typed["model"]["resources"][0]["unit"], "token");
+        assert_eq!(typed["model"]["resources"][0]["divisible"], false);
+        assert_eq!(typed["verification"]["stock"]["max"], 5);
+        assert_eq!(typed["verification"]["need"]["max"], 2);
+        assert_eq!(
+            typed["verification"]["critical"],
+            serde_json::json!([false, true])
+        );
+        assert_eq!(
+            typed["policies"]["grammar"]["priority"]
+                .as_array()
+                .unwrap()
+                .len(),
+            8
+        );
+        assert_eq!(
+            typed["policies"]["grammar"]["reserve"],
+            serde_json::json!([0, 1])
+        );
+        assert_eq!(typed["axioms"]["hard"].as_array().unwrap().len(), 6);
+
+        // Comments and equivalent quoting cannot change canonical typed evidence.
+        let equivalent = source
+            .replace(
+                "id: water-rationing",
+                "id: 'water-rationing' # explanatory comment",
+            )
+            .replace("unit: token", "unit: \"token\"");
+        assert_eq!(
+            typed,
+            serde_json::to_value(parse(&equivalent).unwrap()).unwrap()
+        );
+    }
+
+    #[test]
+    fn yaml_parser_fails_closed_on_structural_errors() {
+        let source = include_str!("../../../examples/water-allocation/world.nomos.yaml");
+        assert!(parse(&source.replace("model:", "unknown: true\nmodel:")).is_err());
+        assert!(parse(&source.replace("  horizon: 1", "  horizon: false")).is_err());
+        assert!(parse(&source.replace("  horizon: 1", "  horizon: -1")).is_err());
+        assert!(
+            parse(&source.replace("critical: [false, true]", "critical: [\"false\", true]"))
+                .is_err()
+        );
+        assert!(parse(&source.replace("  horizon: 1", "")).is_err());
+        assert!(parse(&source.replace("  horizon: 1", "  horizon: 1\n  horizon: 2")).is_err());
+        assert!(parse(&format!("{source}\n---\n{source}")).is_err());
     }
 
     #[test]

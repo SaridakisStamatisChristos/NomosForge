@@ -28,7 +28,7 @@ impl ConflictCase {
     }
 }
 pub fn parse_case(src: &str) -> Result<ConflictCase, String> {
-    let case: ConflictCase = serde_yaml::from_str(src).map_err(|e| e.to_string())?;
+    let case: ConflictCase = serde_norway::from_str(src).map_err(|e| e.to_string())?;
     case.validate()?;
     Ok(case)
 }
