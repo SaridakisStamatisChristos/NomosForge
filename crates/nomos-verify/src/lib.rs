@@ -66,3 +66,5 @@ mod tests {
 }
 
 pub mod transitions;
+
+pub mod behavior;
