@@ -11,6 +11,14 @@ pub struct FailedCandidate {
     pub observed_allocation: Vec<u32>,
     pub violated_axiom: String,
 }
+/// Canonical semantic input snapshot; replay checked, not a signature or source-authenticity proof.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EvidenceContext {
+    pub canonical_model_json: String,
+    pub candidate_programs: Vec<Policy>,
+    pub verification_contract: String,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SynthesisReport {
     pub status: String,
@@ -22,6 +30,8 @@ pub struct SynthesisReport {
     pub witnesses: Vec<World>,
     pub verification_level: String,
     pub witness_order: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub evidence_context: Option<EvidenceContext>,
 }
 pub fn synthesize(
     worlds: &[World],
@@ -47,8 +57,13 @@ pub fn synthesize(
             policy,
             transcript,
             witnesses,
-            verification_level: "EXHAUSTIVE_FINITE".into(),
+            verification_level: if status == "UNKNOWN" {
+                "INCOMPLETE_FINITE".into()
+            } else {
+                "EXHAUSTIVE_FINITE".into()
+            },
             witness_order: "first_failure_in_supplied_domain_order".into(),
+            evidence_context: None,
         }
     };
     loop {
@@ -138,6 +153,7 @@ mod tests {
     fn bounded_budget_is_unknown() {
         let r = synthesize(&reference_worlds(), &reference_grammar(), Some(0)).unwrap();
         assert_eq!(r.status, "UNKNOWN");
+        assert_eq!(r.verification_level, "INCOMPLETE_FINITE");
     }
     #[test]
     fn deterministic_replay() {

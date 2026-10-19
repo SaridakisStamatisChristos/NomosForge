@@ -1,7 +1,7 @@
 //! nomos: finite institutional rule synthesis and single-state conflict checks.
 use nomos_grammar::worlds;
 use nomos_parse::parse;
-use nomos_synth::synthesize;
+use nomos_synth::{synthesize, EvidenceContext};
 use std::{env, fs, process};
 fn run(args: &[String]) -> Result<i32, String> {
     if args.len() < 2 {
@@ -115,7 +115,12 @@ fn run(args: &[String]) -> Result<i32, String> {
                 &spec.policies.grammar.priority,
                 &spec.policies.grammar.reserve,
             )?;
-            let recomputed = synthesize(&domain, &programs, None)?;
+            let mut recomputed = synthesize(&domain, &programs, None)?;
+            recomputed.evidence_context = Some(EvidenceContext {
+                canonical_model_json: serde_json::to_string(&spec).map_err(|e| e.to_string())?,
+                candidate_programs: programs.clone(),
+                verification_contract: "nomos/v0.1/exhaustive-finite".into(),
+            });
             if supplied != recomputed {
                 return Err("reported policy, witness transcript, status or domain count differs from recomputation".into());
             }
@@ -232,7 +237,12 @@ fn run(args: &[String]) -> Result<i32, String> {
                     _ => return Err(format!("unsupported argument to synth: {}", args[pos])),
                 }
             }
-            let result = synthesize(&domain, &grammar, None)?;
+            let mut result = synthesize(&domain, &grammar, None)?;
+            result.evidence_context = Some(EvidenceContext {
+                canonical_model_json: serde_json::to_string(&spec).map_err(|e| e.to_string())?,
+                candidate_programs: grammar.clone(),
+                verification_contract: "nomos/v0.1/exhaustive-finite".into(),
+            });
             let json = serde_json::to_string_pretty(&result).map_err(|e| e.to_string())? + "\n";
             if let Some(pos) = args.iter().position(|a| a == "--json") {
                 let path = args.get(pos + 1).ok_or("missing path after --json")?;
@@ -307,5 +317,38 @@ mod tests {
             run(&args(&["nomos", "relax", conflict, "--show-all-minimal"])),
             Ok(0)
         );
+    }
+
+    #[test]
+    fn verify_rejects_changed_evidence_context() {
+        let world = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../examples/water-allocation/world.nomos.yaml"
+        );
+        let report_path = std::env::temp_dir().join(format!(
+            "nomos-evidence-test-{}-{}.json",
+            std::process::id(),
+            "fixed"
+        ));
+        let report = report_path.to_str().unwrap();
+        let _ = std::fs::remove_file(&report_path);
+        assert_eq!(run(&args(&["nomos", "synth", world, "--json", report])), Ok(0));
+        let check = || args(&["nomos", "verify", report, "--full-domain", "--model", world]);
+        assert_eq!(run(&check()), Ok(0));
+        let original = std::fs::read_to_string(&report_path).unwrap();
+        let mut forged: serde_json::Value = serde_json::from_str(&original).unwrap();
+        forged["evidence_context"]["canonical_model_json"] =
+            serde_json::Value::String("other model".into());
+        std::fs::write(&report_path, serde_json::to_string(&forged).unwrap()).unwrap();
+        assert!(run(&check()).is_err());
+        forged = serde_json::from_str(&original).unwrap();
+        forged["evidence_context"]["candidate_programs"] = serde_json::json!([]);
+        std::fs::write(&report_path, serde_json::to_string(&forged).unwrap()).unwrap();
+        assert!(run(&check()).is_err());
+        forged = serde_json::from_str(&original).unwrap();
+        forged.as_object_mut().unwrap().remove("evidence_context");
+        std::fs::write(&report_path, serde_json::to_string(&forged).unwrap()).unwrap();
+        assert!(run(&check()).is_err());
+        let _ = std::fs::remove_file(report_path);
     }
 }
