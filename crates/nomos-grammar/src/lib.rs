@@ -3,12 +3,21 @@ use nomos_types::{Policy, Priority, World};
 pub fn grammar(priorities: &[Priority], reserves: &[u32]) -> Result<Vec<Policy>, String> {
     if priorities.is_empty()
         || reserves.is_empty()
-        || priorities.len().checked_mul(reserves.len()).is_none_or(|n| n > 512)
+        || priorities
+            .len()
+            .checked_mul(reserves.len())
+            .is_none_or(|n| n > 512)
     {
         return Err("grammar must be nonempty and contain at most 512 programs".into());
     }
-    if priorities.iter().enumerate().any(|(i, p)| priorities[..i].contains(p))
-        || reserves.iter().enumerate().any(|(i, r)| reserves[..i].contains(r))
+    if priorities
+        .iter()
+        .enumerate()
+        .any(|(i, p)| priorities[..i].contains(p))
+        || reserves
+            .iter()
+            .enumerate()
+            .any(|(i, r)| reserves[..i].contains(r))
     {
         return Err("duplicate priority or reserve in candidate grammar".into());
     }
@@ -63,7 +72,11 @@ pub fn domain_size(
     {
         return Err("invalid finite domain".into());
     }
-    if flags.iter().enumerate().any(|(i, f)| flags[..i].contains(f)) {
+    if flags
+        .iter()
+        .enumerate()
+        .any(|(i, f)| flags[..i].contains(f))
+    {
         return Err("duplicate critical flag would count identical worlds repeatedly".into());
     }
     let stocks = u64::from(stock_max - stock_min + 1);

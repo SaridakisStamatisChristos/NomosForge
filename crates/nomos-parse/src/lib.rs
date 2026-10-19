@@ -101,7 +101,12 @@ impl Spec {
         {
             return Err("invalid identifier or model bounds".into());
         }
-        let flags: Vec<u8> = self.verification.critical.iter().map(|&v| u8::from(v)).collect();
+        let flags: Vec<u8> = self
+            .verification
+            .critical
+            .iter()
+            .map(|&v| u8::from(v))
+            .collect();
         domain_size(
             self.model.people.count,
             self.verification.stock.min,
@@ -110,7 +115,10 @@ impl Spec {
             self.verification.need.max,
             &flags,
         )?;
-        grammar(&self.policies.grammar.priority, &self.policies.grammar.reserve)?;
+        grammar(
+            &self.policies.grammar.priority,
+            &self.policies.grammar.reserve,
+        )?;
         const HARD: [&str; 5] = [
             "nonnegative_allocation",
             "need_cap",
@@ -163,7 +171,12 @@ mod tests {
     fn accepted_models_satisfy_enumerator_preconditions() {
         let s = include_str!("../../../examples/water-allocation/world.nomos.yaml");
         let spec = parse(s).unwrap();
-        let flags: Vec<u8> = spec.verification.critical.iter().map(|&x| u8::from(x)).collect();
+        let flags: Vec<u8> = spec
+            .verification
+            .critical
+            .iter()
+            .map(|&x| u8::from(x))
+            .collect();
         assert_eq!(
             domain_size(
                 spec.model.people.count,
@@ -184,7 +197,8 @@ mod tests {
         assert!(parse(&s.replace(
             "bounded_peer_disparity]",
             "bounded_peer_disparity, bounded_peer_disparity]"
-        )).is_err());
+        ))
+        .is_err());
         assert!(parse(&s.replace("need: {min: 0, max: 2}", "need: {min: 0, max: 32}")).is_err());
     }
 }

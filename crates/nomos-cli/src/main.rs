@@ -271,10 +271,22 @@ mod tests {
 
     #[test]
     fn non_synthesis_commands_reject_unknown_arguments() {
-        let world = concat!(env!("CARGO_MANIFEST_DIR"), "/../../examples/water-allocation/world.nomos.yaml");
-        let conflict = concat!(env!("CARGO_MANIFEST_DIR"), "/../../examples/symmetric-single-token/world.nomos.yaml");
-        let transition = concat!(env!("CARGO_MANIFEST_DIR"), "/../../examples/multi-resource/feasible.json");
-        let behavior = concat!(env!("CARGO_MANIFEST_DIR"), "/../../examples/behavior/need-inflation.json");
+        let world = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../examples/water-allocation/world.nomos.yaml"
+        );
+        let conflict = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../examples/symmetric-single-token/world.nomos.yaml"
+        );
+        let transition = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../examples/multi-resource/feasible.json"
+        );
+        let behavior = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../examples/behavior/need-inflation.json"
+        );
         for command in [
             vec!["nomos", "validate", world, "--typo"],
             vec!["nomos", "frontier", world, "--typo"],
@@ -285,9 +297,15 @@ mod tests {
             vec!["nomos", "corpus", "--typo"],
             vec!["nomos", "conflict", "--typo"],
         ] {
-            assert!(run(&args(&command)).is_err(), "accepted unexpected args: {command:?}");
+            assert!(
+                run(&args(&command)).is_err(),
+                "accepted unexpected args: {command:?}"
+            );
         }
         assert_eq!(run(&args(&["nomos", "validate", world])), Ok(0));
-        assert_eq!(run(&args(&["nomos", "relax", conflict, "--show-all-minimal"])), Ok(0));
+        assert_eq!(
+            run(&args(&["nomos", "relax", conflict, "--show-all-minimal"])),
+            Ok(0)
+        );
     }
 }
