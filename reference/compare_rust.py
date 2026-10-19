@@ -22,6 +22,8 @@ def main() -> None:
                 expected={'policy':asdict(policy),'world':asdict(world),
                           'allocation':list(allocation(world,policy)),
                           'violation':violation(world,allocation(world,policy))}
+                # Normalize Python tuples to their JSON array representation before comparison.
+                expected=json.loads(json.dumps(expected))
                 if got!=expected:
                     raise AssertionError(f'Rust/Python disagreement at item {count}: {got} vs {expected}')
                 count+=1
