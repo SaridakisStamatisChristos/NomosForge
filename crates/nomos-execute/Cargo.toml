@@ -8,3 +8,5 @@ license.workspace = true
 nomos-types.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+[dev-dependencies]
+proptest = "1"
