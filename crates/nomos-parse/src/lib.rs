@@ -1,4 +1,5 @@
 //! Strict typed YAML/JSON front end. Cannot silently change units or proof domain.
+use nomos_grammar::{domain_size, grammar};
 use nomos_types::Priority;
 use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -94,12 +95,30 @@ impl Spec {
         {
             return Err("invalid finite bounds".into());
         }
-        if self.verification.critical.is_empty()
-            || self.policies.grammar.priority.is_empty()
-            || self.policies.grammar.reserve.is_empty()
+        if self.model.id.trim().is_empty()
+            || self.model.resources[0].max_stock > 128
+            || self.verification.need.max > 32
         {
-            return Err("empty verification domain or grammar".into());
+            return Err("invalid identifier or model bounds".into());
         }
+        let flags: Vec<u8> = self
+            .verification
+            .critical
+            .iter()
+            .map(|&v| u8::from(v))
+            .collect();
+        domain_size(
+            self.model.people.count,
+            self.verification.stock.min,
+            self.verification.stock.max,
+            self.verification.need.min,
+            self.verification.need.max,
+            &flags,
+        )?;
+        grammar(
+            &self.policies.grammar.priority,
+            &self.policies.grammar.reserve,
+        )?;
         const HARD: [&str; 5] = [
             "nonnegative_allocation",
             "need_cap",
@@ -113,6 +132,9 @@ impl Spec {
             }
         }
         // v0.1 kernel checks all six checks: omission must not silently weaken requirements.
+        if self.axioms.hard.len() != 6 {
+            return Err("v0.1 requires exactly six distinct hard checks".into());
+        }
         if ![
             "nonnegative_allocation",
             "need_cap",
@@ -143,5 +165,40 @@ mod tests {
         assert!(parse(s).is_ok());
         assert!(parse(&s.replace("unit: token", "unit: litre")).is_err());
         assert!(parse(&s.replace("divisible: false", "divisible: true")).is_err());
+    }
+
+    #[test]
+    fn accepted_models_satisfy_enumerator_preconditions() {
+        let s = include_str!("../../../examples/water-allocation/world.nomos.yaml");
+        let spec = parse(s).unwrap();
+        let flags: Vec<u8> = spec
+            .verification
+            .critical
+            .iter()
+            .map(|&x| u8::from(x))
+            .collect();
+        assert_eq!(
+            domain_size(
+                spec.model.people.count,
+                spec.verification.stock.min,
+                spec.verification.stock.max,
+                spec.verification.need.min,
+                spec.verification.need.max,
+                &flags
+            ),
+            Ok(1_296)
+        );
+        assert!(parse(&s.replace("need: {min: 0, max: 2}", "need: {min: 0, max: 33}")).is_err());
+        assert!(parse(&s.replace("critical: [false, true]", "critical: [true, true]")).is_err());
+        assert!(parse(&s.replace("priority: [index, ", "priority: [index, index, ")).is_err());
+        assert!(parse(&s.replace("reserve: [0, 1]", "reserve: [0, 0]")).is_err());
+        assert!(parse(&s.replace("reserve: [0, 1]", "reserve: [0, 10001]")).is_err());
+        assert!(parse(&s.replace("max_stock: 5", "max_stock: 129")).is_err());
+        assert!(parse(&s.replace(
+            "bounded_peer_disparity]",
+            "bounded_peer_disparity, bounded_peer_disparity]"
+        ))
+        .is_err());
+        assert!(parse(&s.replace("need: {min: 0, max: 2}", "need: {min: 0, max: 32}")).is_err());
     }
 }

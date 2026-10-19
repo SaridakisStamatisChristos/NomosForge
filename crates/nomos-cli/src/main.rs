@@ -9,8 +9,8 @@ fn run(args: &[String]) -> Result<i32, String> {
     }
     match args[1].as_str() {
         "relax" => {
-            if args.len() < 3 {
-                return Err("usage: nomos relax conflict-world.yaml --show-all-minimal".into());
+            if args.len() != 3 && (args.len() != 4 || args[3] != "--show-all-minimal") {
+                return Err("usage: nomos relax conflict-world.yaml [--show-all-minimal]".into());
             }
             let src = fs::read_to_string(&args[2]).map_err(|e| e.to_string())?;
             let case = nomos_conflict::relax::parse_case(&src)?;
@@ -23,7 +23,10 @@ fn run(args: &[String]) -> Result<i32, String> {
             Ok(0)
         }
         "simulate" => {
-            let path = args.get(2).ok_or("transition JSON file required")?;
+            if args.len() != 3 {
+                return Err("usage: nomos simulate transition.json".into());
+            }
+            let path = &args[2];
             let input = fs::read_to_string(path).map_err(|e| e.to_string())?;
             let model: nomos_verify::transitions::TransitionModel =
                 serde_json::from_str(&input).map_err(|e| e.to_string())?;
@@ -40,7 +43,10 @@ fn run(args: &[String]) -> Result<i32, String> {
             })
         }
         "behavior" => {
-            let path = args.get(2).ok_or("behavior scenario JSON required")?;
+            if args.len() != 3 {
+                return Err("usage: nomos behavior scenario.json".into());
+            }
+            let path = &args[2];
             let input = fs::read_to_string(path).map_err(|e| e.to_string())?;
             let model: nomos_verify::behavior::BehaviorModel =
                 serde_json::from_str(&input).map_err(|e| e.to_string())?;
@@ -53,6 +59,9 @@ fn run(args: &[String]) -> Result<i32, String> {
             Ok(0)
         }
         "corpus" => {
+            if args.len() != 2 {
+                return Err("usage: nomos corpus".into());
+            }
             let worlds = nomos_grammar::reference_worlds();
             for policy in nomos_grammar::reference_grammar() {
                 for world in &worlds {
@@ -130,6 +139,9 @@ fn run(args: &[String]) -> Result<i32, String> {
             })
         }
         "doctor" => {
+            if args.len() != 2 {
+                return Err("usage: nomos doctor".into());
+            }
             println!("NomosForge 0.1: finite enumerator only; no SMT/social validity");
             Ok(0)
         }
@@ -151,6 +163,9 @@ fn run(args: &[String]) -> Result<i32, String> {
             Ok(3)
         }
         "conflict" => {
+            if args.len() != 2 {
+                return Err("usage: nomos conflict".into());
+            }
             let cert = nomos_conflict::symmetric_single_token();
             nomos_conflict::check_certificate(&cert)?;
             println!(
@@ -162,6 +177,9 @@ fn run(args: &[String]) -> Result<i32, String> {
         "validate" | "synth" | "frontier" => {
             if args.len() < 3 {
                 return Err("world YAML file required".into());
+            }
+            if (args[1] == "validate" || args[1] == "frontier") && args.len() != 3 {
+                return Err(format!("usage: nomos {} world.nomos.yaml", args[1]));
             }
             let src = fs::read_to_string(&args[2]).map_err(|e| e.to_string())?;
             let spec = parse(&src)?;
@@ -240,5 +258,54 @@ fn main() {
             eprintln!("INVALID: {e}");
             process::exit(2)
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn args(parts: &[&str]) -> Vec<String> {
+        parts.iter().map(|s| (*s).to_string()).collect()
+    }
+
+    #[test]
+    fn non_synthesis_commands_reject_unknown_arguments() {
+        let world = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../examples/water-allocation/world.nomos.yaml"
+        );
+        let conflict = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../examples/symmetric-single-token/world.nomos.yaml"
+        );
+        let transition = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../examples/multi-resource/feasible.json"
+        );
+        let behavior = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../examples/behavior/need-inflation.json"
+        );
+        for command in [
+            vec!["nomos", "validate", world, "--typo"],
+            vec!["nomos", "frontier", world, "--typo"],
+            vec!["nomos", "relax", conflict, "--typo"],
+            vec!["nomos", "simulate", transition, "--typo"],
+            vec!["nomos", "behavior", behavior, "--typo"],
+            vec!["nomos", "doctor", "--typo"],
+            vec!["nomos", "corpus", "--typo"],
+            vec!["nomos", "conflict", "--typo"],
+        ] {
+            assert!(
+                run(&args(&command)).is_err(),
+                "accepted unexpected args: {command:?}"
+            );
+        }
+        assert_eq!(run(&args(&["nomos", "validate", world])), Ok(0));
+        assert_eq!(
+            run(&args(&["nomos", "relax", conflict, "--show-all-minimal"])),
+            Ok(0)
+        );
     }
 }
