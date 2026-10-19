@@ -181,16 +181,34 @@ mod tests {
         assert_eq!(typed["model"]["resources"][0]["divisible"], false);
         assert_eq!(typed["verification"]["stock"]["max"], 5);
         assert_eq!(typed["verification"]["need"]["max"], 2);
-        assert_eq!(typed["verification"]["critical"], serde_json::json!([false, true]));
-        assert_eq!(typed["policies"]["grammar"]["priority"].as_array().unwrap().len(), 8);
-        assert_eq!(typed["policies"]["grammar"]["reserve"], serde_json::json!([0, 1]));
+        assert_eq!(
+            typed["verification"]["critical"],
+            serde_json::json!([false, true])
+        );
+        assert_eq!(
+            typed["policies"]["grammar"]["priority"]
+                .as_array()
+                .unwrap()
+                .len(),
+            8
+        );
+        assert_eq!(
+            typed["policies"]["grammar"]["reserve"],
+            serde_json::json!([0, 1])
+        );
         assert_eq!(typed["axioms"]["hard"].as_array().unwrap().len(), 6);
 
         // Comments and equivalent quoting cannot change canonical typed evidence.
         let equivalent = source
-            .replace("id: water-rationing", "id: 'water-rationing' # explanatory comment")
+            .replace(
+                "id: water-rationing",
+                "id: 'water-rationing' # explanatory comment",
+            )
             .replace("unit: token", "unit: \"token\"");
-        assert_eq!(typed, serde_json::to_value(parse(&equivalent).unwrap()).unwrap());
+        assert_eq!(
+            typed,
+            serde_json::to_value(parse(&equivalent).unwrap()).unwrap()
+        );
     }
 
     #[test]
@@ -199,7 +217,10 @@ mod tests {
         assert!(parse(&source.replace("model:", "unknown: true\nmodel:")).is_err());
         assert!(parse(&source.replace("  horizon: 1", "  horizon: false")).is_err());
         assert!(parse(&source.replace("  horizon: 1", "  horizon: -1")).is_err());
-        assert!(parse(&source.replace("critical: [false, true]", "critical: [\"false\", true]")).is_err());
+        assert!(
+            parse(&source.replace("critical: [false, true]", "critical: [\"false\", true]"))
+                .is_err()
+        );
         assert!(parse(&source.replace("  horizon: 1", "")).is_err());
         assert!(parse(&source.replace("  horizon: 1", "  horizon: 1\n  horizon: 2")).is_err());
         assert!(parse(&format!("{source}\n---\n{source}")).is_err());
