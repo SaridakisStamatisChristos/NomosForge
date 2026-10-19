@@ -7,8 +7,8 @@ The certificate checker separately reconstructs all four integer outcomes of the
 Run:
 ```bash
 cargo test --workspace --all-targets
-cargo run --quiet -p nomos-cli -- corpus > /tmp/nomos-corpus.jsonl
-cargo run --quiet -p nomos-cli -- synth examples/water-allocation/world.nomos.yaml --json /tmp/nomos-synth.json
+cargo run --locked --quiet -p nomos-cli -- corpus > /tmp/nomos-corpus.jsonl
+cargo run --locked --quiet -p nomos-cli -- synth examples/water-allocation/world.nomos.yaml --json /tmp/nomos-synth.json
 python3 reference/compare_rust.py /tmp/nomos-corpus.jsonl /tmp/nomos-synth.json
 python3 -m pytest -q reference/test_nomosforge_reference.py
 ```
