@@ -3,7 +3,7 @@ use nomos_parse::parse;
 
 #[test]
 fn finite_model_parser_never_panics_under_seed_mutations() {
-    let seed = include_str!("../../../../examples/water-allocation/world.nomos.yaml");
+    let seed = include_str!("../../../examples/water-allocation/world.nomos.yaml");
     assert!(seed.is_ascii(), "mutation corpus is byte-indexed ASCII");
 
     // Removing one ASCII character at every position exercises truncated
