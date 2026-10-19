@@ -1,0 +1,170 @@
+{
+  "evidence": "Exhaustive *bounded* testing; not a formal verification of real institutions",
+  "grammar_size": 16,
+  "impossibility": {
+    "axioms": [
+      "integer_ex_post_allocation",
+      "full_utilization",
+      "deterministic_anonymity"
+    ],
+    "claim_scope": "This single input is impossible under a deterministic anonymous integer-valued allocator. It does not rule out lotteries or divisible resources.",
+    "minimal_conflict_cores": [
+      [
+        "full_utilization",
+        "deterministic_anonymity"
+      ]
+    ],
+    "possible_allocations": [
+      {
+        "all": false,
+        "allocation": [
+          0,
+          0
+        ],
+        "capacity": true,
+        "deterministic_anonymity": true,
+        "full_utilization": false
+      },
+      {
+        "all": false,
+        "allocation": [
+          0,
+          1
+        ],
+        "capacity": true,
+        "deterministic_anonymity": false,
+        "full_utilization": true
+      },
+      {
+        "all": false,
+        "allocation": [
+          1,
+          0
+        ],
+        "capacity": true,
+        "deterministic_anonymity": false,
+        "full_utilization": true
+      },
+      {
+        "all": false,
+        "allocation": [
+          1,
+          1
+        ],
+        "capacity": false,
+        "deterministic_anonymity": true,
+        "full_utilization": false
+      }
+    ],
+    "relaxations": {
+      "lottery": "50%-50% selection of (1,0) vs (0,1); anonymous distribution with full ex-post utilization",
+      "divisible": "(0.5,0.5) if divisibility is explicitly permitted; deterministic and anonymous",
+      "allow_waste": "(0,0) if full utilization is relaxed"
+    },
+    "satisfying_allocations": 0,
+    "world": {
+      "critical": [
+        0,
+        0
+      ],
+      "needs": [
+        1,
+        1
+      ],
+      "stock": 1
+    }
+  },
+  "policy": {
+    "priority": "critical_equal",
+    "reserve": 0
+  },
+  "status": "BOUNDED_VERIFIED_IN_FINITE_GRAMMAR",
+  "transcript": [
+    {
+      "candidate": {
+        "priority": "index",
+        "reserve": 0
+      },
+      "counterexample": {
+        "critical": [
+          0,
+          0,
+          1
+        ],
+        "needs": [
+          0,
+          1,
+          1
+        ],
+        "stock": 1
+      },
+      "observed_allocation": [
+        0,
+        1,
+        0
+      ],
+      "violated_axiom": "critical_first"
+    },
+    {
+      "candidate": {
+        "priority": "critical_index",
+        "reserve": 0
+      },
+      "counterexample": {
+        "critical": [
+          0,
+          0,
+          0
+        ],
+        "needs": [
+          0,
+          2,
+          2
+        ],
+        "stock": 2
+      },
+      "observed_allocation": [
+        0,
+        2,
+        0
+      ],
+      "violated_axiom": "bounded_peer_disparity"
+    }
+  ],
+  "universe": {
+    "agents": 3,
+    "critical": "0 or 1",
+    "model": "single-step, one indivisible resource",
+    "needs": "0..2 per agent",
+    "stock": "0..5"
+  },
+  "witnesses": [
+    {
+      "critical": [
+        0,
+        0,
+        1
+      ],
+      "needs": [
+        0,
+        1,
+        1
+      ],
+      "stock": 1
+    },
+    {
+      "critical": [
+        0,
+        0,
+        0
+      ],
+      "needs": [
+        0,
+        2,
+        2
+      ],
+      "stock": 2
+    }
+  ],
+  "world_count": 1296
+}
