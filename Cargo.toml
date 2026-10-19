@@ -1,0 +1,22 @@
+[workspace]
+resolver = "2"
+members = ["crates/nomos-types", "crates/nomos-grammar", "crates/nomos-execute", "crates/nomos-verify", "crates/nomos-synth", "crates/nomos-conflict", "crates/nomos-report", "crates/nomos-parse", "crates/nomos-cli"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.82"
+license = "Apache-2.0"
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+nomos-types = { path = "crates/nomos-types" }
+nomos-grammar = { path = "crates/nomos-grammar" }
+nomos-execute = { path = "crates/nomos-execute" }
+nomos-verify = { path = "crates/nomos-verify" }
+nomos-synth = { path = "crates/nomos-synth" }
+nomos-conflict = { path = "crates/nomos-conflict" }
+nomos-report = { path = "crates/nomos-report" }
+nomos-parse = { path = "crates/nomos-parse" }
