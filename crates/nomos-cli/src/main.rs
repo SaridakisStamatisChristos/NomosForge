@@ -52,7 +52,7 @@ fn run(args: &[String]) -> Result<i32, String> {
             );
             Ok(3)
         }
-        "validate" | "synth" => {
+        "validate" | "synth" | "frontier" => {
             if args.len() < 3 {
                 return Err("world YAML file required".into());
             }
@@ -80,6 +80,14 @@ fn run(args: &[String]) -> Result<i32, String> {
                 &spec.policies.grammar.priority,
                 &spec.policies.grammar.reserve,
             )?;
+            if args[1] == "frontier" {
+                let report = nomos_report::analyze(&domain, &grammar)?;
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&report).map_err(|e| e.to_string())?
+                );
+                return Ok(if report.feasible_count > 0 { 0 } else { 3 });
+            }
             let result = synthesize(&domain, &grammar, None)?;
             let json = serde_json::to_string_pretty(&result).map_err(|e| e.to_string())? + "\n";
             if let Some(pos) = args.iter().position(|a| a == "--json") {
