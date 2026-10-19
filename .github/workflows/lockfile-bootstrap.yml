@@ -20,9 +20,9 @@ jobs:
         run: |
           # Modern Cargo can resolve to this workspace's declared 1.82 MSRV.
           CARGO_RESOLVER_INCOMPATIBLE_RUST_VERSIONS=fallback cargo +stable generate-lockfile
-          # Convert the generated lock syntax to Cargo 1.82's supported v3 format.
+          # Keep v3 lock syntax; modern Cargo may already emit v3 due to MSRV.
           # The following locked test/build verify both format and dependency selection.
-          python3 -c 'from pathlib import Path; p=Path("Cargo.lock"); s=p.read_text(); assert "\nversion = 4\n" in s; p.write_text(s.replace("\nversion = 4\n", "\nversion = 3\n", 1))'
+          python3 -c 'from pathlib import Path; p=Path("Cargo.lock"); s=p.read_text(); s=s.replace("\nversion = 4\n", "\nversion = 3\n", 1); assert "\nversion = 3\n" in s; p.write_text(s)'
           cargo +1.82.0 test --workspace --all-targets --locked
           cargo +1.82.0 build --workspace --locked
       - name: Commit verified Cargo.lock to feature branch
