@@ -132,7 +132,10 @@ mod tests {
         let result = synthesize(&states, &programs, None).unwrap();
         let sealed = seal(&spec, &states, &programs, result).unwrap();
 
-        let mut renamed = spec.clone();
+        let mut renamed = nomos_parse::parse(include_str!(
+            "../../../examples/water-allocation/world.nomos.yaml"
+        ))
+        .unwrap();
         renamed.model.id = "different-model".into();
         assert!(check_binding(&renamed, &states, &programs, &sealed).is_err());
 
@@ -149,11 +152,9 @@ mod tests {
         assert!(check_binding(&spec, &states, &programs, &altered).is_err());
 
         let mut altered = sealed.clone();
-        altered.evidence.model_sha256.replace_range(0..1, "0");
-        assert!(
-            altered == sealed
-                || check_binding(&spec, &states, &programs, &altered).is_err()
-        );
+        altered.evidence.model_sha256 = "0".repeat(64);
+        assert_ne!(altered.evidence.model_sha256, sealed.evidence.model_sha256);
+        assert!(check_binding(&spec, &states, &programs, &altered).is_err());
 
         let mut reordered_states = states.clone();
         reordered_states.swap(0, 1);
