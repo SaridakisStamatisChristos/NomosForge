@@ -21,32 +21,73 @@ impl World {
         }
         Ok(())
     }
-    pub fn demand(&self) -> u64 { self.needs.iter().map(|&n| u64::from(n)).sum() }
+    pub fn demand(&self) -> u64 {
+        self.needs.iter().map(|&n| u64::from(n)).sum()
+    }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Priority {
-    Index, Equal, NeedsDesc, NeedsAsc, CriticalIndex,
-    CriticalEqual, CriticalNeedsDesc, CriticalNeedsAsc,
+    Index,
+    Equal,
+    NeedsDesc,
+    NeedsAsc,
+    CriticalIndex,
+    CriticalEqual,
+    CriticalNeedsDesc,
+    CriticalNeedsAsc,
 }
 impl Priority {
     pub const ALL: [Priority; 8] = [
-        Self::Index, Self::Equal, Self::NeedsDesc, Self::NeedsAsc,
-        Self::CriticalIndex, Self::CriticalEqual, Self::CriticalNeedsDesc, Self::CriticalNeedsAsc
+        Self::Index,
+        Self::Equal,
+        Self::NeedsDesc,
+        Self::NeedsAsc,
+        Self::CriticalIndex,
+        Self::CriticalEqual,
+        Self::CriticalNeedsDesc,
+        Self::CriticalNeedsAsc,
     ];
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct Policy { pub priority: Priority, pub reserve: u32 }
+pub struct Policy {
+    pub priority: Priority,
+    pub reserve: u32,
+}
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum VerificationLevel { BoundedVerified, InfeasibleInGrammar, ModelInfeasible, Unknown }
+pub enum VerificationLevel {
+    BoundedVerified,
+    InfeasibleInGrammar,
+    ModelInfeasible,
+    Unknown,
+}
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test] fn validates_flags_and_bounds() {
-        assert!(World { stock: 1, needs: vec![1], critical: vec![1] }.validate().is_ok());
-        assert!(World { stock: 1, needs: vec![1], critical: vec![2] }.validate().is_err());
-        assert!(World { stock: 1, needs: vec![], critical: vec![] }.validate().is_err());
+    #[test]
+    fn validates_flags_and_bounds() {
+        assert!(World {
+            stock: 1,
+            needs: vec![1],
+            critical: vec![1]
+        }
+        .validate()
+        .is_ok());
+        assert!(World {
+            stock: 1,
+            needs: vec![1],
+            critical: vec![2]
+        }
+        .validate()
+        .is_err());
+        assert!(World {
+            stock: 1,
+            needs: vec![],
+            critical: vec![]
+        }
+        .validate()
+        .is_err());
     }
 }
