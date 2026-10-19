@@ -9,13 +9,19 @@ fn run(args: &[String]) -> Result<i32, String> {
     }
     match args[1].as_str() {
         "relax" => {
-            if args.len()<3 {return Err("usage: nomos relax conflict-world.yaml --show-all-minimal".into());}
-            let src=fs::read_to_string(&args[2]).map_err(|e|e.to_string())?;
-            let case=nomos_conflict::relax::parse_case(&src)?;
-            let report=nomos_conflict::relax::propose(&case,nomos_conflict::symmetric_single_token())?;
-            println!("{}",serde_json::to_string_pretty(&report).map_err(|e|e.to_string())?);
+            if args.len() < 3 {
+                return Err("usage: nomos relax conflict-world.yaml --show-all-minimal".into());
+            }
+            let src = fs::read_to_string(&args[2]).map_err(|e| e.to_string())?;
+            let case = nomos_conflict::relax::parse_case(&src)?;
+            let report =
+                nomos_conflict::relax::propose(&case, nomos_conflict::symmetric_single_token())?;
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&report).map_err(|e| e.to_string())?
+            );
             Ok(0)
-        },
+        }
         "doctor" => {
             println!("NomosForge 0.1: finite enumerator only; no SMT/social validity");
             Ok(0)
