@@ -71,7 +71,10 @@ fn run(args: &[String]) -> Result<i32, String> {
         }
         "verify" => {
             if args.len() < 4 || args[3] != "--full-domain" {
-                return Err("usage: nomos verify report.json --full-domain [--model world.nomos.yaml]".into());
+                return Err(
+                    "usage: nomos verify report.json --full-domain [--model world.nomos.yaml]"
+                        .into(),
+                );
             }
             let model_path = if args.len() == 4 {
                 "examples/water-allocation/world.nomos.yaml"
@@ -85,24 +88,47 @@ fn run(args: &[String]) -> Result<i32, String> {
             let report_source = fs::read_to_string(&args[2]).map_err(|e| e.to_string())?;
             let supplied: nomos_synth::SynthesisReport =
                 serde_json::from_str(&report_source).map_err(|e| e.to_string())?;
-            let flags: Vec<u8> = spec.verification.critical.iter().map(|&c| u8::from(c)).collect();
+            let flags: Vec<u8> = spec
+                .verification
+                .critical
+                .iter()
+                .map(|&c| u8::from(c))
+                .collect();
             let domain = worlds(
-                spec.model.people.count, spec.verification.stock.min, spec.verification.stock.max,
-                spec.verification.need.min, spec.verification.need.max, &flags
+                spec.model.people.count,
+                spec.verification.stock.min,
+                spec.verification.stock.max,
+                spec.verification.need.min,
+                spec.verification.need.max,
+                &flags,
             )?;
-            let programs = nomos_grammar::grammar(&spec.policies.grammar.priority, &spec.policies.grammar.reserve)?;
+            let programs = nomos_grammar::grammar(
+                &spec.policies.grammar.priority,
+                &spec.policies.grammar.reserve,
+            )?;
             let recomputed = synthesize(&domain, &programs, None)?;
             if supplied != recomputed {
                 return Err("reported policy, witness transcript, status or domain count differs from recomputation".into());
             }
             if let Some(policy) = supplied.policy {
                 if nomos_verify::check_all(&domain, policy)?.is_some() {
-                    return Err("supplied policy is not valid across the declared finite domain".into());
+                    return Err(
+                        "supplied policy is not valid across the declared finite domain".into(),
+                    );
                 }
             }
-            println!("CERTIFICATE_CHECKED: {} for {} enumerated states of {}", supplied.status, domain.len(), model_path);
-            Ok(if supplied.status == "BOUNDED_VERIFIED_IN_FINITE_GRAMMAR" {0} else {3})
-        },
+            println!(
+                "CERTIFICATE_CHECKED: {} for {} enumerated states of {}",
+                supplied.status,
+                domain.len(),
+                model_path
+            );
+            Ok(if supplied.status == "BOUNDED_VERIFIED_IN_FINITE_GRAMMAR" {
+                0
+            } else {
+                3
+            })
+        }
         "doctor" => {
             println!("NomosForge 0.1: finite enumerator only; no SMT/social validity");
             Ok(0)
@@ -175,7 +201,9 @@ fn run(args: &[String]) -> Result<i32, String> {
             let mut saw_engine = false;
             while pos < args.len() {
                 match args[pos].as_str() {
-                    "--engine" if !saw_engine && pos + 1 < args.len() && args[pos + 1] == "enumerate" => {
+                    "--engine"
+                        if !saw_engine && pos + 1 < args.len() && args[pos + 1] == "enumerate" =>
+                    {
                         saw_engine = true;
                         pos += 2;
                     }
