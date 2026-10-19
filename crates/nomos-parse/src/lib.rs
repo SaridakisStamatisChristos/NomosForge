@@ -107,7 +107,7 @@ impl Spec {
             .iter()
             .map(|&v| u8::from(v))
             .collect();
-        domain_size(
+        let world_count = domain_size(
             self.model.people.count,
             self.verification.stock.min,
             self.verification.stock.max,
@@ -115,10 +115,18 @@ impl Spec {
             self.verification.need.max,
             &flags,
         )?;
-        grammar(
+        let programs = grammar(
             &self.policies.grammar.priority,
             &self.policies.grammar.reserve,
         )?;
+        // Bound the Cartesian verification workload, not just its individual axes.
+        const MAX_STATE_POLICY_PAIRS: usize = 250_000;
+        if world_count
+            .checked_mul(programs.len())
+            .is_none_or(|n| n > MAX_STATE_POLICY_PAIRS)
+        {
+            return Err("state-policy workload exceeds 250000 pairs".into());
+        }
         const HARD: [&str; 5] = [
             "nonnegative_allocation",
             "need_cap",
@@ -200,5 +208,22 @@ mod tests {
         ))
         .is_err());
         assert!(parse(&s.replace("need: {min: 0, max: 2}", "need: {min: 0, max: 32}")).is_err());
+    }
+
+    #[test]
+    fn state_policy_work_is_bounded_without_rejecting_small_grammars() {
+        let s = include_str!("../../../examples/water-allocation/world.nomos.yaml");
+        // 6 * 11^3 * 2^3 = 63,888 unique worlds, which is within
+        // the state limit but too expensive against sixteen candidates.
+        let enlarged = s.replace("need: {min: 0, max: 2}", "need: {min: 0, max: 10}");
+        assert!(parse(&enlarged).is_err());
+        // The exact same domain with one candidate is within budget.
+        let narrowed = enlarged
+            .replace(
+                "priority: [index, equal, needs_desc, needs_asc, critical_index, critical_equal, critical_needs_desc, critical_needs_asc]",
+                "priority: [critical_equal]",
+            )
+            .replace("reserve: [0, 1]", "reserve: [0]");
+        assert!(parse(&narrowed).is_ok());
     }
 }
