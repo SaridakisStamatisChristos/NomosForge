@@ -6,6 +6,8 @@ rust-version.workspace = true
 license.workspace = true
 [dependencies]
 nomos-types.workspace = true
+nomos-grammar.workspace = true
+nomos-execute.workspace = true
 nomos-verify.workspace = true
 nomos-conflict.workspace = true
 serde.workspace = true
