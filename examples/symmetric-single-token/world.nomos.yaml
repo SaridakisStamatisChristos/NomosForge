@@ -1,0 +1,8 @@
+schema: nomos/conflict-model/v0.1
+world:
+  stock: 1
+  needs: [1, 1]
+  critical: [0, 0]
+resource_unit: token
+divisible: false
+axioms: [full_utilization, deterministic_anonymity]
