@@ -2,7 +2,7 @@
 
 The independent Python interpreter enumerates 1,296 ordered legal states and 16 ordered policies, or **20,736** state-policy pairs. The Rust `nomos corpus` command exports each allocation and first violated axiom; `reference/compare_rust.py` compares every JSON row to independently calculated Python values and then compares bounded CEGIS transcripts.
 
-The certificate checker separately reconstructs all four integer outcomes of the one-token impossibility and falsifies tampered rows/assumptions. Rust property tests exercise bounded conservation, cap and a known feasible policy. An optional cargo-fuzz harness targets the strict YAML parser, and bench_finite.py emits measured CLI times with their scope explicitly disclosed. Do not cite performance or fuzz results until those tools actually run.
+The certificate checker separately reconstructs all four integer outcomes of the one-token impossibility and falsifies tampered rows/assumptions. Rust property tests exercise bounded conservation, cap and a known feasible policy. The normal Rust CI also executes deterministic single-character deletion and punctuation/control-character insertion mutations against the reference YAML fixture, asserting that the parser does not panic. This is a reproducible malformed-input smoke suite, not a fuzz-duration or vulnerability-freedom claim. An optional cargo-fuzz harness targets the strict YAML parser, and bench_finite.py emits measured CLI times with their scope explicitly disclosed. Do not cite performance or fuzz results until those tools actually run.
 
 Run:
 ```bash
