@@ -16,6 +16,8 @@ bash scripts/reproduce.sh
 
 The smoke script compiles and runs the Rust CLI, checks a synthesized policy against the reference domain, validates the independent conflict witness, enumerates explicit relaxations, exercises finite multi-resource transitions and behavior, and compares 20,736 outputs to the Python reference.
 
+**Evidence binding:** the CLI writes the exact canonical model representation and ordered candidate grammar into synthesis reports. `nomos verify` checks these against the supplied model before accepting the recomputed evidence. This deliberately does not claim signed provenance or byte-level file identity. Older unbound synthesis reports must be regenerated.
+
 **Verification labels:** `BOUNDED_VERIFIED_IN_FINITE_GRAMMAR` (all declared reference worlds pass), `UNREALIZABLE_IN_FINITE_GRAMMAR` (only the bounded grammar), `MODEL_INFEASIBLE` (this explicitly enumerated admissible-outcome world), `UNKNOWN` (not proven), and `CERTIFICATE_CHECKED` (exactly re-evaluated evidence). No SMT-backed or universal claims.
 
 **Not yet established:** reproducible solver speed comparisons; symbolic theorem proving; sampled or calibrated real-world human behavior; parser fuzz campaign coverage; coverage across compilers/OS architectures beyond observed CI; publication-level algorithmic novelty.
