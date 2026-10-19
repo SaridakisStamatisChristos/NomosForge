@@ -89,7 +89,7 @@ pub fn worlds(
                 &w.needs,
                 &w.critical,
             )
-        };
+        }
         k(a).cmp(&k(b))
     });
     Ok(result)
