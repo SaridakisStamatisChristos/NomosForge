@@ -58,14 +58,17 @@ fn run(args: &[String]) -> Result<i32, String> {
                 for world in &worlds {
                     let allocation = nomos_execute::allocate(world, policy)?;
                     let violated = nomos_execute::violation(world, &allocation);
-                    println!("{}", serde_json::json!({
-                        "policy": policy, "world": world,
-                        "allocation": allocation, "violation": violated
-                    }));
+                    println!(
+                        "{}",
+                        serde_json::json!({
+                            "policy": policy, "world": world,
+                            "allocation": allocation, "violation": violated
+                        })
+                    );
                 }
             }
             Ok(0)
-        },
+        }
         "doctor" => {
             println!("NomosForge 0.1: finite enumerator only; no SMT/social validity");
             Ok(0)

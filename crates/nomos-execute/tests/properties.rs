@@ -1,5 +1,5 @@
-use nomos_execute::{allocate,violation};
-use nomos_types::{Policy,Priority,World};
+use nomos_execute::{allocate, violation};
+use nomos_types::{Policy, Priority, World};
 use proptest::prelude::*;
 proptest! {
     #[test]
