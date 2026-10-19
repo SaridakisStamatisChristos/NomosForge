@@ -39,7 +39,7 @@ This script builds the CLI, tests the Rust workspace, runs two showcases and the
 | Crate | Scope |
 |---|---|
 | `nomos-types` | Finite typed world, priority, and policy contracts |
-| `nomos-parse` | Strict declarative YAML reader |
+| `nomos-parse` | Strict declarative YAML reader (serde_norway; Rust 1.82 compatible) |
 | `nomos-grammar` | Explicit 16-program grammar and finite universe enumeration |
 | `nomos-execute` | Deterministic greedy allocation and hard-check semantics |
 | `nomos-verify` | Finite policy and trace checking, hypothetical behaviors |

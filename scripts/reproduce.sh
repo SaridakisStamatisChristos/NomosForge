@@ -8,6 +8,11 @@ rustc --version
 cargo --version
 cargo build --workspace --locked
 cargo test --workspace --all-targets --locked
+# An unmaintained parser must not remain in the resolved dependency graph.
+if grep -Fq 'name = "serde_yaml"' Cargo.lock; then
+    echo "ERROR: obsolete serde_yaml remains in Cargo.lock" >&2
+    exit 1
+fi
 echo "[2/8] Validate and synthesize exact finite model"
 cargo run --locked --quiet -p nomos-cli -- validate examples/water-allocation/world.nomos.yaml
 cargo run --locked --quiet -p nomos-cli -- synth examples/water-allocation/world.nomos.yaml --engine enumerate --json "$temp/policy.json"
