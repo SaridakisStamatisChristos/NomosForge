@@ -6,7 +6,7 @@
 
 ## Two executable demonstrations
 
-Requires Rust (toolchain stable, edition 2021; MSRV declared in Cargo.toml) and Python 3.12+ for the independent reference and CI tools. No service, account, database, API key, or GPU.
+Requires Rust and Cargo (edition 2021; declared MSRV 1.82) and Python 3.12+ for the independent reference and CI tools. CI tests current stable Rust; the declared MSRV is not separately exercised. No service, account, database, API key, or GPU.
 
 ```bash
 # 1. Produce and check a policy against the 1,296-state reference domain.
@@ -54,4 +54,4 @@ This script builds the CLI, tests the Rust workspace, runs two showcases and the
 
 `BOUNDED_VERIFIED_IN_FINITE_GRAMMAR` = passes **all** enumerated worlds, not outside the domain. `UNREALIZABLE_IN_FINITE_GRAMMAR` = no program in the specified grammar works; not model-level impossibility. `MODEL_INFEASIBLE` = no admissible allocation works in **a specific** declared symmetric two-person state. `UNKNOWN` = computation budget exceeded or incompleteness. `CERTIFICATE_CHECKED` is emitted only when the checker re-evaluates the evidence.
 
-All 10 milestone branches are reviewable pull requests. **They are not merged until explicitly authorized.** Contributions welcome under [Apache-2.0](LICENSE).
+The initial implementation milestones are merged into `main`; their reviews remain in the [pull request history](https://github.com/SaridakisStamatisChristos/NomosForge/pulls?q=is%3Apr+is%3Amerged). Contributions welcome under [Apache-2.0](LICENSE).

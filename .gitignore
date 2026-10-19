@@ -1,0 +1,15 @@
+# Rust and cargo-fuzz build products
+/target/
+/fuzz/target/
+
+# Python reference caches and local environments
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+
+# Local editor and operating-system artifacts
+.DS_Store
+*.swp
+
+# Cargo.lock intentionally remains trackable when generated.
