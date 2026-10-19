@@ -196,13 +196,13 @@ mod tests {
     #[test]
     fn yaml_parser_fails_closed_on_structural_errors() {
         let source = include_str!("../../../examples/water-allocation/world.nomos.yaml");
-        assert!(parse(&source.replace("model:", "unknown: true\\nmodel:")).is_err());
+        assert!(parse(&source.replace("model:", "unknown: true\nmodel:")).is_err());
         assert!(parse(&source.replace("  horizon: 1", "  horizon: false")).is_err());
         assert!(parse(&source.replace("  horizon: 1", "  horizon: -1")).is_err());
         assert!(parse(&source.replace("critical: [false, true]", "critical: [\"false\", true]")).is_err());
         assert!(parse(&source.replace("  horizon: 1", "")).is_err());
-        assert!(parse(&source.replace("  horizon: 1", "  horizon: 1\\n  horizon: 2")).is_err());
-        assert!(parse(&format!("{source}\\n---\\n{source}")).is_err());
+        assert!(parse(&source.replace("  horizon: 1", "  horizon: 1\n  horizon: 2")).is_err());
+        assert!(parse(&format!("{source}\n---\n{source}")).is_err());
     }
 
     #[test]
