@@ -24,14 +24,21 @@ fn run(args: &[String]) -> Result<i32, String> {
         }
         "simulate" => {
             let path = args.get(2).ok_or("transition JSON file required")?;
-            let input = fs::read_to_string(path).map_err(|e|e.to_string())?;
+            let input = fs::read_to_string(path).map_err(|e| e.to_string())?;
             let model: nomos_verify::transitions::TransitionModel =
-                serde_json::from_str(&input).map_err(|e|e.to_string())?;
+                serde_json::from_str(&input).map_err(|e| e.to_string())?;
             let report = nomos_verify::transitions::simulate(&model)?;
             nomos_verify::transitions::check_trace(&model, &report)?;
-            println!("{}", serde_json::to_string_pretty(&report).map_err(|e|e.to_string())?);
-            Ok(if report.status == "BOUNDED_TRACE_CHECKED" {0} else {3})
-        },
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&report).map_err(|e| e.to_string())?
+            );
+            Ok(if report.status == "BOUNDED_TRACE_CHECKED" {
+                0
+            } else {
+                3
+            })
+        }
         "doctor" => {
             println!("NomosForge 0.1: finite enumerator only; no SMT/social validity");
             Ok(0)
