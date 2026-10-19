@@ -136,11 +136,13 @@ fn run(args: &[String]) -> Result<i32, String> {
                 domain.len(),
                 model_path
             );
-            Ok(if supplied.report.status == "BOUNDED_VERIFIED_IN_FINITE_GRAMMAR" {
-                0
-            } else {
-                3
-            })
+            Ok(
+                if supplied.report.status == "BOUNDED_VERIFIED_IN_FINITE_GRAMMAR" {
+                    0
+                } else {
+                    3
+                },
+            )
         }
         "doctor" => {
             if args.len() != 2 {
@@ -236,7 +238,12 @@ fn run(args: &[String]) -> Result<i32, String> {
                     _ => return Err(format!("unsupported argument to synth: {}", args[pos])),
                 }
             }
-            let result = seal(&spec, &domain, &grammar, synthesize(&domain, &grammar, None)?)?;
+            let result = seal(
+                &spec,
+                &domain,
+                &grammar,
+                synthesize(&domain, &grammar, None)?,
+            )?;
             let json = serde_json::to_string_pretty(&result).map_err(|e| e.to_string())? + "\n";
             if let Some(pos) = args.iter().position(|a| a == "--json") {
                 let path = args.get(pos + 1).ok_or("missing path after --json")?;

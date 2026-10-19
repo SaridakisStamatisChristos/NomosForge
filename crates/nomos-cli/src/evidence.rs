@@ -69,11 +69,15 @@ pub fn check_binding(
 ) -> Result<(), String> {
     let recomputed = synthesize(worlds, grammar, None)?;
     if supplied.report != recomputed {
-        return Err("reported policy, transcript, status or domain differs from recomputation".into());
+        return Err(
+            "reported policy, transcript, status or domain differs from recomputation".into(),
+        );
     }
     let expected = seal(spec, worlds, grammar, recomputed)?;
     if supplied.evidence != expected.evidence {
-        return Err("evidence provenance mismatch (model, grammar, domain, report or version)".into());
+        return Err(
+            "evidence provenance mismatch (model, grammar, domain, report or version)".into(),
+        );
     }
     Ok(())
 }
