@@ -20,6 +20,12 @@ The smoke script compiles and runs the Rust CLI, checks a synthesized policy aga
 
 **Not yet established:** reproducible solver speed comparisons; symbolic theorem proving; sampled or calibrated real-world human behavior; parser fuzz campaign coverage; coverage across compilers/OS architectures beyond observed CI; publication-level algorithmic novelty.
 
+## Versioned synthesis evidence
+
+CLI `synth` emits an `evidence` object (`nomos/synthesis-evidence/v1`) with four SHA-256 identifiers for the **parsed typed model**, **ordered grammar**, **ordered enumerated worlds**, and **complete synthesis report**, plus declared producer and semantic versions. SHA-256 inputs use deterministic serde JSON for typed structs and vectors and domain-separated byte-length framing. Changes to YAML formatting alone do not alter the model fingerprint; a change to a parsed model field or grammar sequence does. The checker re-enumerates and re-synthesizes instead of trusting hashes as proof. Old reports without `evidence` are rejected; regenerate them using `nomos synth`. Report format changes are intentionally versioned.
+
+These identifiers are unkeyed integrity checks, **not digital signatures** or guarantees about who generated an artifact. The producer version is the crate version, not a cryptographic binding to its Git commit; for audits record the Git commit, manifest and CI run URL separately. The evidence schema and declared semantics identifier must be revised when the corresponding model semantics change.
+
 ## Experiment provenance
 
 `reference/nomosforge_reference.py` contains the original bounded executable specification. The committed `reference/nomosforge_experiment_results.json` is regenerated and compared in CI, not treated as external proof. `scripts/manifest.py` computes the SHA-256 of tracked research artifacts when invoked; no precomputed fake hashes are asserted. For independent claims, capture the Git commit, generated manifest, rustc/cargo/python versions, machine and benchmark flags.

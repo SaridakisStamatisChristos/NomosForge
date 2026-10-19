@@ -1,4 +1,6 @@
 //! nomos: finite institutional rule synthesis and single-state conflict checks.
+mod evidence;
+use evidence::{check_binding, seal, BoundReport};
 use nomos_grammar::worlds;
 use nomos_parse::parse;
 use nomos_synth::synthesize;
@@ -95,8 +97,13 @@ fn run(args: &[String]) -> Result<i32, String> {
             let source = fs::read_to_string(model_path).map_err(|e| e.to_string())?;
             let spec = parse(&source)?;
             let report_source = fs::read_to_string(&args[2]).map_err(|e| e.to_string())?;
-            let supplied: nomos_synth::SynthesisReport =
+            let original: serde_json::Value =
                 serde_json::from_str(&report_source).map_err(|e| e.to_string())?;
+            let supplied: BoundReport =
+                serde_json::from_value(original.clone()).map_err(|e| e.to_string())?;
+            if serde_json::to_value(&supplied).map_err(|e| e.to_string())? != original {
+                return Err("unexpected or unbound fields in evidence report".into());
+            }
             let flags: Vec<u8> = spec
                 .verification
                 .critical
@@ -115,11 +122,8 @@ fn run(args: &[String]) -> Result<i32, String> {
                 &spec.policies.grammar.priority,
                 &spec.policies.grammar.reserve,
             )?;
-            let recomputed = synthesize(&domain, &programs, None)?;
-            if supplied != recomputed {
-                return Err("reported policy, witness transcript, status or domain count differs from recomputation".into());
-            }
-            if let Some(policy) = supplied.policy {
+            check_binding(&spec, &domain, &programs, &supplied)?;
+            if let Some(policy) = supplied.report.policy {
                 if nomos_verify::check_all(&domain, policy)?.is_some() {
                     return Err(
                         "supplied policy is not valid across the declared finite domain".into(),
@@ -128,11 +132,11 @@ fn run(args: &[String]) -> Result<i32, String> {
             }
             println!(
                 "CERTIFICATE_CHECKED: {} for {} enumerated states of {}",
-                supplied.status,
+                supplied.report.status,
                 domain.len(),
                 model_path
             );
-            Ok(if supplied.status == "BOUNDED_VERIFIED_IN_FINITE_GRAMMAR" {
+            Ok(if supplied.report.status == "BOUNDED_VERIFIED_IN_FINITE_GRAMMAR" {
                 0
             } else {
                 3
@@ -232,7 +236,7 @@ fn run(args: &[String]) -> Result<i32, String> {
                     _ => return Err(format!("unsupported argument to synth: {}", args[pos])),
                 }
             }
-            let result = synthesize(&domain, &grammar, None)?;
+            let result = seal(&spec, &domain, &grammar, synthesize(&domain, &grammar, None)?)?;
             let json = serde_json::to_string_pretty(&result).map_err(|e| e.to_string())? + "\n";
             if let Some(pos) = args.iter().position(|a| a == "--json") {
                 let path = args.get(pos + 1).ok_or("missing path after --json")?;
@@ -240,7 +244,7 @@ fn run(args: &[String]) -> Result<i32, String> {
             } else {
                 print!("{json}");
             }
-            match result.status.as_str() {
+            match result.report.status.as_str() {
                 "BOUNDED_VERIFIED_IN_FINITE_GRAMMAR" => Ok(0),
                 "UNREALIZABLE_IN_FINITE_GRAMMAR" => Ok(3),
                 "UNKNOWN" => Ok(4),
