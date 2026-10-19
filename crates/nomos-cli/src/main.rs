@@ -1,1 +1,3 @@
-fn main() { println!("NomosForge scaffold: milestones under review"); }
+fn main() {
+    println!("NomosForge scaffold: milestones under review");
+}
