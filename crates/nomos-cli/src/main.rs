@@ -332,7 +332,10 @@ mod tests {
         ));
         let report = report_path.to_str().unwrap();
         let _ = std::fs::remove_file(&report_path);
-        assert_eq!(run(&args(&["nomos", "synth", world, "--json", report])), Ok(0));
+        assert_eq!(
+            run(&args(&["nomos", "synth", world, "--json", report])),
+            Ok(0)
+        );
         let check = || args(&["nomos", "verify", report, "--full-domain", "--model", world]);
         assert_eq!(run(&check()), Ok(0));
         let original = std::fs::read_to_string(&report_path).unwrap();
