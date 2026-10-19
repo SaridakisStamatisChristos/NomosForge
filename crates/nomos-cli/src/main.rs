@@ -1,16 +1,42 @@
-//! nomos: finite institutional rule synthesis, bounded evidence only.
+//! nomos: finite institutional rule synthesis and single-state conflict checks.
 use nomos_grammar::worlds;
 use nomos_parse::parse;
 use nomos_synth::synthesize;
 use std::{env, fs, process};
 fn run(args: &[String]) -> Result<i32, String> {
     if args.len() < 2 {
-        return Err("usage: nomos validate|synth|doctor [world.nomos.yaml]".into());
+        return Err("usage: nomos validate|synth|explain|doctor [file]".into());
     }
     match args[1].as_str() {
         "doctor" => {
             println!("NomosForge 0.1: finite enumerator only; no SMT/social validity");
             Ok(0)
+        }
+        "explain" => {
+            if args.len() != 3 {
+                return Err("usage: nomos explain certificate.json".into());
+            }
+            let src = fs::read_to_string(&args[2]).map_err(|e| e.to_string())?;
+            let cert: nomos_conflict::ConflictCertificate =
+                serde_json::from_str(&src).map_err(|e| e.to_string())?;
+            nomos_conflict::check_certificate(&cert)?;
+            println!(
+                "CERTIFICATE_CHECKED: MODEL_INFEASIBLE only for {}",
+                cert.schema
+            );
+            for core in cert.minimal_conflict_cores {
+                println!("subset-minimal conflict: {}", core.join(", "));
+            }
+            Ok(3)
+        }
+        "conflict" => {
+            let cert = nomos_conflict::symmetric_single_token();
+            nomos_conflict::check_certificate(&cert)?;
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&cert).map_err(|e| e.to_string())?
+            );
+            Ok(3)
         }
         "validate" | "synth" => {
             if args.len() < 3 {
