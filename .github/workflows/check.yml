@@ -11,6 +11,9 @@ jobs:
       - run: cargo fmt --all -- --check
       - run: cargo clippy --workspace --all-targets -- -D warnings
       - run: cargo test --workspace --all-targets
+      - run: bash scripts/reproduce.sh
+      - run: python3 scripts/manifest.py > /tmp/nomos-manifest.json
+      - run: python3 -c "import json; d=json.load(open('/tmp/nomos-manifest.json'));assert d['files'] and len(d['commit'])==40"
       - run: cargo run --quiet -p nomos-cli -- corpus > /tmp/nomos-corpus.jsonl
       - run: cargo run --quiet -p nomos-cli -- synth examples/water-allocation/world.nomos.yaml --json /tmp/nomos-synth.json
       - run: python3 reference/compare_rust.py /tmp/nomos-corpus.jsonl /tmp/nomos-synth.json

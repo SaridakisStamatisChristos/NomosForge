@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NomosForge — Institutional synthesis with checkable bounds</title>
+<style>
+:root{color-scheme:dark;--fg:#e8effa;--bg:#0d1422;--muted:#9daec5;--accent:#91c9ff;--edge:#334054}
+*{box-sizing:border-box}body{background:var(--bg);color:var(--fg);font:16px/1.62 system-ui,sans-serif;margin:0}
+main{max-width:1000px;margin:auto;padding:4rem 1.5rem}.eyebrow{color:var(--accent);font-weight:700;letter-spacing:.15em;text-transform:uppercase}
+h1{font-size:clamp(2.5rem,6vw,4.8rem);line-height:1.08;margin:.6rem 0 1.4rem}
+h2{font-size:1.5rem;margin-top:3.2rem}p{max-width:78ch;color:var(--muted)}
+strong{color:var(--fg)}.intro{font-size:1.22rem}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+section.card{border:1px solid var(--edge);padding:1.35rem;border-radius:14px;background:#141d2d}
+.card h3{margin:0 0 .3rem}.card p{margin:0}code,pre{font-family:ui-monospace,monospace}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;padding:1.2rem;background:#080d17;border:1px solid var(--edge);border-radius:14px}
+a{color:var(--accent)}footer{margin-top:4rem;border-top:1px solid var(--edge);padding-top:2rem}
+</style></head>
+<body><main>
+<div class="eyebrow">Research engine · finite proofs · transparent limits</div>
+<h1>Institutional rules.<br>Verifiable assumptions.</h1>
+<p class="intro">Give NomosForge a grammar of proposed rules and explicit constraints. Receive a working policy, a replayable counterexample, or a precisely scoped explanation of which assumptions cannot jointly hold.</p>
+<h2>Three outputs, three distinct claims</h2>
+<div class="grid">
+<section class="card"><h3>Bounded synthesis</h3><p>Finds an integer allocation rule satisfying declared checks across <strong>1,296</strong> bounded states.</p></section>
+<section class="card"><h3>Conflict evidence</h3><p>Proves the two-person, one-indivisible-token model cannot be both fully utilized and strictly deterministic-anonymous.</p></section>
+<section class="card"><h3>Explicit relaxations</h3><p>Examines lotteries, divisibility, and waste as model revisions—without inventing a morally preferred trade-off.</p></section>
+</div>
+<h2>Run the two demonstrations</h2>
+<pre>cargo run --quiet -p nomos-cli -- synth examples/water-allocation/world.nomos.yaml --engine enumerate --json /tmp/nomos-policy.json
+cargo run --quiet -p nomos-cli -- verify /tmp/nomos-policy.json --full-domain
+
+cargo run --quiet -p nomos-cli -- conflict &gt; /tmp/nomos-conflict.json || test "$?" -eq 3
+cargo run --quiet -p nomos-cli -- explain /tmp/nomos-conflict.json || test "$?" -eq 3</pre>
+<h2>What this does not prove</h2>
+<p><strong>Real-world governance validity is not established.</strong> Correct finite models do not validate ethical assumptions, population behavior, demographic classifications, implementation rights, or human responses. CEGIS and model enumeration are established methods; algorithmic novelty and any performance superiority are unverified.</p>
+<footer>NomosForge · Apache-2.0 · <a href="../README.md">Repository instructions</a> · <a href="proof-boundaries.md">Proof boundaries</a> · <a href="reproducibility.md">Reproducibility</a></footer>
+</main></body></html>
