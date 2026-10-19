@@ -1,0 +1,58 @@
+{
+  "schema": "nomos/transition/v0.1",
+  "unit": "token",
+  "agents": 2,
+  "horizon": 1,
+  "resources": [
+    {
+      "name": "water",
+      "stock": 2,
+      "max_stock": 3,
+      "needs": [
+        1,
+        1
+      ],
+      "critical": [
+        0,
+        0
+      ],
+      "policy": {
+        "priority": "critical_equal",
+        "reserve": 0
+      }
+    },
+    {
+      "name": "food",
+      "stock": 2,
+      "max_stock": 3,
+      "needs": [
+        1,
+        1
+      ],
+      "critical": [
+        0,
+        0
+      ],
+      "policy": {
+        "priority": "critical_equal",
+        "reserve": 0
+      }
+    }
+  ],
+  "coupling_per_agent": [
+    1,
+    1
+  ],
+  "steps": [
+    {
+      "replenishment": [
+        0,
+        0
+      ],
+      "shock_loss": [
+        0,
+        0
+      ]
+    }
+  ]
+}
