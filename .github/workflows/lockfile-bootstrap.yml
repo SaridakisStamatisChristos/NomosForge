@@ -18,7 +18,11 @@ jobs:
         run: rustup toolchain install 1.82.0 --profile minimal
       - name: Resolve and test dependencies with Rust 1.82
         run: |
-          cargo +1.82.0 generate-lockfile
+          # Modern Cargo can resolve to this workspace's declared 1.82 MSRV.
+          CARGO_RESOLVER_INCOMPATIBLE_RUST_VERSIONS=fallback cargo +stable generate-lockfile
+          # Convert the generated lock syntax to Cargo 1.82's supported v3 format.
+          # The following locked test/build verify both format and dependency selection.
+          python3 -c 'from pathlib import Path; p=Path("Cargo.lock"); s=p.read_text(); assert "\nversion = 4\n" in s; p.write_text(s.replace("\nversion = 4\n", "\nversion = 3\n", 1))'
           cargo +1.82.0 test --workspace --all-targets --locked
           cargo +1.82.0 build --workspace --locked
       - name: Commit verified Cargo.lock to feature branch
