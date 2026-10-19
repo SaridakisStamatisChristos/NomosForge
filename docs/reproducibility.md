@@ -29,3 +29,5 @@ The smoke script compiles and runs the Rust CLI, checks a synthesized policy aga
 **Dependency locking:** The committed workspace `Cargo.lock` records the selected Rust dependency versions and registry checksums. The lockfile was resolved using an MSRV-aware Cargo resolver targeting Rust 1.82, retained in the Cargo 1.82-compatible lockfile v3 format, and verified by a locked test and build on Rust 1.82. CI and the smoke script use `--locked` to reject silent dependency re-resolution. This improves repeatability of dependencies, but does **not** imply byte-for-byte reproducible binaries across toolchains, operating systems, or environments.
 
 `cargo test` and the checked reference oracle do not substitute for an adversarial security or policy audit. The `fuzz/` harness is available but not part of normal CI.
+
+**YAML dependency:** the declared parser is `serde_yaml_ng 0.10.0` (maintained fork); the lockfile is pinned to its registry checksum. No YAML 1.2 conformance or general-purpose parser-security certification is implied. Parser, model, conflict, reference and MSRV tests run in CI.

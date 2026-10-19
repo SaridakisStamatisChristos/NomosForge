@@ -152,7 +152,7 @@ impl Spec {
     }
 }
 pub fn parse(input: &str) -> Result<Spec, String> {
-    let parsed: Spec = serde_yaml::from_str(input).map_err(|e| e.to_string())?;
+    let parsed: Spec = serde_yaml_ng::from_str(input).map_err(|e| e.to_string())?;
     parsed.validate()?;
     Ok(parsed)
 }
